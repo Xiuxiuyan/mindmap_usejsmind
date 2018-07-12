@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>  
+  <head>  
+	<meta charset="utf-8">  
+    <title>思维导图</title>  
+    <link type="text/css" rel="stylesheet" href="./jsmind/style/jsmind.css" />
+    <style type="text/css">
+        #header{
+            background-color:black;
+            color:white;
+            text-align:center;
+            padding:0.5px;
+            height: 85px;
+        }
+        #mainWin{
+            margin-left: 200px;
+            margin-top: 20px;
+        }
+	     #jsmind_container{
+	         width:100%;
+	         height:500px;
+	         border:solid 1px #ccc;
+	         background:#f4f4f4;
+	     }
+        #nodeText{
+            height:25px;
+            margin-left: 20px;
+        }
+	    .btn{
+            width: 100px;
+            line-height: 38px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 5px;
+            margin:0 10px 10px 10px;
+            position: relative;
+            overflow: hidden;
+	     	color: black;
+            border:1px solid #dce1e6;
+            box-shadow: 0 1px 2px #fff inset,0 -1px 0 #a8abae inset;
+            background: #e4e8ec;/*-webkit-linear-gradient(top,#f2f3f7,#e4e8ec);
+            background: -moz-linear-gradient(top,#f2f3f7,#e4e8ec);
+            background: linear-gradient(top,#f2f3f7,#e4e8ec);*/
+	     }
+        .btn:active{
+            top:1px;
+            color: floralwhite;
+            box-shadow: 0 1px 3px #114566 inset,0 3px 0 #fff;
+            background: #6699CC;
+        }
+        #deleteBtn:active{
+            background: #CC0000
+        }
+        .SideBar{
+            padding: 10px 20px 0px 20px;
+            line-height:30px;
+            background-color:#eeeeee;
+            height:600px;
+            width:160px;
+            float:left;
+            position: absolute;
+        }
+        .SideBar h2 {
+            color: #6B6E3F;
+            border-bottom: thin #6B6E3F solid;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+        .SideBar ul {
+            padding-left: 15px;
+        }
+        .SideBar li {
+            padding-bottom: 8px;
+        }
+        
+        .a-upload {
+            padding: 4px 10px;
+            height: 20px;
+            line-height: 20px;
+            position: relative;
+            cursor: pointer;
+            color: #888;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            *display: inline;
+            *zoom: 1
+        }
+
+        .a-upload  input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            filter: alpha(opacity=0);
+            cursor: pointer
+        }
+
+        .a-upload:hover {
+            color: #444;
+            background: #eee;
+            border-color: #ccc;
+            text-decoration: none
+        }
+	    </style>
+  </head> 
+<body>
+	<div id="header"><h1>思维导图</h1></div>
+    <div class="SideBar">
+        <h2>myFile</h2>
+        <ul>
+            <li><a href="myMind.html">mind1</a></li>
+            <li>mind2</li>
+        </ul>
+        <ul>
+        	<li>
+				<!--<form method="post" action="index.php">-->
+                    <input type="text" name="filename" id="filename">
+                    <button name="subl" onclick="newFile()">新建文件</button>
+              <!-- 	</form>-->
+			
+			</li>
+        	<li>
+				<!--<input id="file_input" type="file">
+        		<button onclick="openFile()">打开文件</button>-->
+                <div class="a-upload">
+				    <input type="file" name="" id="file_input">选择文件
+				</div>
+        		<button onclick="openFile()">打开文件</button>
+			</li>
+        </ul>
+    </div>
+    <div id="mainWin">
+        <div>
+            <input type="text" id="nodeText" placeholder="输入节点内容" >
+            <button class="btn" onclick="createNewNode()" >新建节点</button>
+            <button class="btn" id="deleteBtn" onclick="deleteNode()" >删除节点</button>
+            <button class="btn" onclick="saveFile()">保存为文件</button>
+            <button class="btn" onclick="savePic()">保存为图片</button>
+            <button class="btn" id="send">上传</button>
+            <button id="zoomInBtn" onclick="zoomIn()" style="margin-left: 10px;">+</button>
+            <button id="zoomOutBtn" onclick="zoomOut()">-</button>
+            
+            <div style="float:right; margin-right: 30px;">
+	        	<!-- <img src="headpic.jpeg" width="25px" height="25px" /> --> 
+	        	用户名:
+	        </div>
+            <div style="float: right; margin-right: 20px; margin-top: 0px;">
+				样式
+                <select onchange="setTheme(this.options[this.options.selectedIndex].value)" style="height:30px; width:70px;">
+                    <option value="primary" selected>primary</option>
+                    <option value="asphalt">asphalt</option>
+                    <option value="warning">warning</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="jsmind_container"></div>
+    </div>
+    
+<script type="text/javascript" src="./jsmind/js/jsmind.js"></script>
+<script type="text/javascript" src="./jsmind/js/jsmind.draggable.js"></script>
+<script type="text/javascript" src="./jsmind/js/jsmind.screenshot.js"></script>
+<script src="./jquery.min.js"></script>
+
+<script>
+	var gbfjdid;
+    var id = 1;
+    //思维导图所有节点
+    var data = [{"id":"root", "isroot":true, "topic":"myMind"},
+               ];
+    
+    var mind = {
+        "meta":{
+            "name":"myMind",
+            "author":"hizzgdev@163.com",
+            "version":"0.2",
+        },
+        "format":"node_array",
+        "data":data,
+    };
+    var options = {
+        container:'jsmind_container',
+        editable:true,
+        theme:'primary'
+    }
+    var jm = jsMind.show(options,mind);
+	            
+    //新建节点
+	function createNewNode(){
+        var text = document.getElementById("nodeText");
+        //alert(text.value);
+	    var newnode = {"id":text.value, "parentid":"root", "topic":text.value};
+        if(!newnode.topic)
+            alert("请输入节点内容");
+        else{
+            jm.add_node(newnode.parentid, newnode.id, newnode.topic);
+        }
+        ///send();
+    }
+    
+    //删除节点
+    function deleteNode(){
+        var _node = jm.get_selected_node();
+
+        var children = _node.children;
+        var ci = children.length;
+        
+        if(_node == null)
+            alert("请选择一个节点");
+        else if(_node.id == "root")
+            alert("根节点不能删除");
+        else{
+             /* for(var i=0; i<data.length; i++){//仅删除了一个节点，此节点的子节点未删除
+            	 //alert(data[i].id);
+            // alert(data[i].id == _node.id);
+            	if(data[i].id == _node.id){
+            		alert(data[i].id);
+            		data.splice(i,1);
+            	}
+            } 
+            var j;
+            //删除data中所有子节点
+            for(i=0; i<data.length; i++){
+            	for(j=0; j<ci; j++){
+            		if(data[i].id == children[j].id)
+            			data.splice(i,1);
+            	}
+        	} */
+            jm.remove_node(_node);
+        }
+        /* var dataStr = JSON.stringify(data);
+        alert(dataStr); */
+        
+        //send();
+        
+        var map_json = jm.get_data('node_array');
+    	var name = map_json.meta.name;
+    	var data = JSON.stringify(map_json.data);
+    	var all = JSON.stringify(map_json);
+		// 发送消息
+		socket.send(JSON.stringify({
+			usergroupname : "1",
+			content : name,
+			nickname : data,
+			format : "node_array",
+			all : all,//思维导图所有数据的字符串形式
+		}));
+		console.log("send");  
+		
+    }
+    //保存为jm文件
+    function saveFile(){
+    	var mind_data = jm.get_data('node_array');
+    	var mind_name = mind_data.meta.name;
+    	var mind_str = jsMind.util.json.json2string(mind_data);
+    	jsMind.util.file.save(mind_str, 'text/jsmind', mind_name + '.jm');
+    }
+    //打开保存好的jm文件
+    function openFile(){
+    	var file_input = document.getElementById('file_input');
+    	var files = file_input.files;
+    	if(files.length > 0){
+    		var file_data = files[0];
+    		jsMind.util.file.read(file_data, function(jsmind_data, jsmind_name){
+    			var mind = jsMind.util.json.string2json(jsmind_data);
+    			if(!!mind){
+    				jm.show(mind);
+    			}else{
+    				alert("选择的文件不能打开成一个思维导图");
+    			}
+    		});
+    	}else{
+    		alert("请先选择一个文件");
+    	}
+    }
+    //保存为png图片
+    function savePic(){
+    	jm.screenshot.shootDownload();
+    }
+    
+    //缩放（html中未实现）
+    var zoomInButton = document.getElementById("zoomInBtn");
+    var zoomOutButton = document.getElementById("zoomOutBtn");
+
+    function zoomIn() {
+        if (jm.view.zoomIn()) {
+            zoomOutButton.disabled = false;
+        } else {
+            zoomInButton.disabled = true;
+        };
+    };
+
+    function zoomOut() {
+        if (jm.view.zoomOut()) {
+            zoomInButton.disabled = false;
+        } else {
+            zoomOutButton.disabled = true;
+        };
+    };
+    //设置节点样式
+    function setTheme(theme){
+        jm.set_theme(theme);
+    }
+    //新建文件
+    function newFile(){
+        var filename = document.getElementById("filename");
+        alert(filename.value);
+        jm.update_node("root",filename.value);
+        mind.meta.name = filename.value;
+    }
+    
+    
+    
+    
+    
+    $(function() {
+    	// 新建WebSocket对象，最后的/websocket对应服务器端的@ServerEndpoint("/websocket")
+    	var socket = new WebSocket('ws://localhost:80/webSocket/websocket');
+    	//var socket = new WebSocket('ws://localhost:8080/webSocket/websocket');
+    	//var socket = new WebSocket('ws://${pageContext.request.getServerName()}:${pageContext.request.getServerPort()}${pageContext.request.contextPath}/websocket');
+    	var pre_mapStr = null;
+    	// 处理服务器端发送的数据
+    	socket.onmessage = function(event) {
+    		//alert("q");
+    		addMessage(event.data);
+    	};
+
+    	//发送
+    	$('#send').on('click', function() {
+    		var map_json = jm.get_data('node_array');
+        	var name = map_json.meta.name;
+        	var data = JSON.stringify(map_json.data);
+        	var all = JSON.stringify(map_json);
+    		// 发送消息
+    		socket.send(JSON.stringify({
+    			usergroupname : "1",
+    			content : name,
+    			nickname : data,
+    			format : "node_array",
+    			all : all,//思维导图所有数据的字符串形式
+    		}));
+    		console.log("send");
+    		//alert("上传成功")；
+    	});
+    	
+    	var num = Math.round(Math.random()*10);  
+        alert(num);  
+        //循环执行，每隔60-150秒钟执行一次showMsgIcon()   
+        window.setInterval(send, 1000*num);   
+        
+        function send(){
+        	
+        	var map_json = jm.get_data('node_array');
+        	var name = map_json.meta.name;
+        	var data = JSON.stringify(map_json.data);
+        	var all = JSON.stringify(map_json);
+        	if(pre_mapStr == all){
+        		
+        	}else{
+        		// 发送消息
+            	socket.send(JSON.stringify({
+        			usergroupname : "1",
+        			content : name,
+        			nickname : data,
+        			format : "node_array",
+        			all : all,//思维导图所有数据的字符串形式
+        		}));
+        		console.log("send");
+        		pre_mapStr = all;
+        	}
+        }
+    	
+    	
+    	//显示收到的思维导图
+    	function addMessage(message){
+    		//用户组内更新
+    		/*if(message.usergroupname == '1')
+    		{
+    			var map = JSON.parse(message.all);
+    			jm.show(map);
+    			console.log("add");
+    		}
+    		else
+    			console.log("noadd");
+    		}*/
+    		message = JSON.parse(message);
+    		var map = JSON.parse(message.all);
+			jm.show(map);
+			console.log("add");
+    	}
+    }
+    ); 
+
+</script>
+		
+</body>  
+</html>  
